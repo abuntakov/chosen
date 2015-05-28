@@ -2,7 +2,8 @@ class AbstractChosen
 
   constructor: (@form_field, @options={}) ->
     return unless AbstractChosen.browser_is_supported()
-    @is_multiple = @form_field.multiple
+    @is_multiple_select = @form_field.multiple
+    @is_multiple = @form_field.multiple and not @options.disable_tags
     this.set_default_text()
     this.set_default_values()
 
@@ -32,6 +33,8 @@ class AbstractChosen
     @display_selected_options = if @options.display_selected_options? then @options.display_selected_options else true
     @display_disabled_options = if @options.display_disabled_options? then @options.display_disabled_options else true
     @include_group_label_in_selected = @options.include_group_label_in_selected || false
+
+    @disable_tags = @options.disable_tags || false
 
   set_default_text: ->
     if @form_field.getAttribute("data-placeholder")
@@ -65,7 +68,12 @@ class AbstractChosen
 
   results_option_build: (options) ->
     content = ''
-    for data in @results_data
+    results = if @disable_tags
+        this.results_selected_first(@results_data) 
+      else
+        @results_data
+
+    for data in results
       if data.group
         content += this.result_add_group data
       else
@@ -80,6 +88,18 @@ class AbstractChosen
           this.single_set_selected_text(this.choice_label(data))
 
     content
+
+  results_selected_first: (results) ->
+    selected_result = []
+    unselected_results = []
+
+    for data in results
+      if data.selected
+        selected_result.push data
+      else
+        unselected_results.push data
+
+    selected_result.concat(unselected_results)   
 
   result_add_option: (option) ->
     return '' unless option.search_match

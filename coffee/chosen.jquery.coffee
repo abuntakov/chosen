@@ -27,6 +27,7 @@ class Chosen extends AbstractChosen
   set_up_html: ->
     container_classes = ["chosen-container"]
     container_classes.push "chosen-container-" + (if @is_multiple then "multi" else "single")
+    container_classes.push "chosen-container-no-tags" if @disable_tags
     container_classes.push @form_field.className if @inherit_select_classes && @form_field.className
     container_classes.push "chosen-rtl" if @is_rtl
 
@@ -278,7 +279,12 @@ class Chosen extends AbstractChosen
 
   search_results_mouseup: (evt) ->
     target = if $(evt.target).hasClass "active-result" then $(evt.target) else $(evt.target).parents(".active-result").first()
-    if target.length
+
+    if target.length and @disable_tags and $(evt.target).hasClass "result-selected"
+      this.choice_destroy $(evt.target)
+      this.results_hide() unless (evt.metaKey or evt.ctrlKey) and @is_multiple
+      this.single_set_selected_text $(evt.target).text()
+    else if target.length
       @result_highlight = target
       this.result_select(evt)
       @search_field.focus()
@@ -340,7 +346,7 @@ class Chosen extends AbstractChosen
         @form_field_jq.trigger("chosen:maxselected", {chosen: this})
         return false
 
-      if @is_multiple
+      if @is_multiple_select
         high.removeClass("active-result")
       else
         this.reset_single_select_options()
@@ -375,6 +381,11 @@ class Chosen extends AbstractChosen
       this.single_deselect_control_build()
       @selected_item.removeClass("chosen-default")
 
+      if @disable_tags
+        count = this.choices_count()
+
+        text = if count > 0 then count + " selected" else @default_text
+        
     @selected_item.find("span").html(text)
 
   result_deselect: (pos) ->
@@ -405,10 +416,10 @@ class Chosen extends AbstractChosen
     $('<div/>').text($.trim(@search_field.val())).html()
 
   winnow_results_set_highlight: ->
-    selected_results = if not @is_multiple then @search_results.find(".result-selected.active-result") else []
+    selected_results = if not @is_multiple_select then @search_results.find(".result-selected.active-result") else []
     do_high = if selected_results.length then selected_results.first() else @search_results.find(".active-result").first()
 
-    this.result_do_highlight do_high if do_high?
+    this.result_do_highlight do_high if do_high? and not @disable_tags
 
   no_results: (terms) ->
     no_results_html = $('<li class="no-results">' + @results_none_found + ' "<span></span>"</li>')

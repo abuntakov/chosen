@@ -53,6 +53,14 @@ $chosen-sprite-retina: image-url('chosen-sprite@2x.png') !default;
 }
 /* @end */
 
+.chosen-container-no-tags {
+  .chosen-drop .result-selected {
+    color: #ececec;
+    background-color: #4eb949;
+  }
+}
+
+
 /* @group Single Chosen */
 .chosen-container-single{
   .chosen-single {
