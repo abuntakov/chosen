@@ -325,7 +325,11 @@ class Chosen extends AbstractChosen
 
   results_reset: ->
     this.reset_single_select_options()
-    @form_field.options[0].selected = true
+    if(@disable_tags)
+      $(@form_field).find(':selected').prop('selected', false);
+    else
+      @form_field.options[0].selected = true
+      
     this.single_set_selected_text()
     this.show_search_field_default()
     this.results_reset_cleanup()
@@ -384,8 +388,11 @@ class Chosen extends AbstractChosen
       if @disable_tags
         count = this.choices_count()
 
-        text = if count > 0 then count + " selected" else @default_text
-        
+        if(count > 1)
+          text = count + " selected";
+        else if(count == 0)
+          text =  @default_text;
+
     @selected_item.find("span").html(text)
 
   result_deselect: (pos) ->
