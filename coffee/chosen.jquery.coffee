@@ -387,7 +387,8 @@ class Chosen extends AbstractChosen
 
       if @disable_tags
         count = this.choices_count()
-
+        if(count == 1) 
+          text = this.form_field_jq.find(':selected').text();
         if(count > 1)
           text = count + " selected";
         else if(count == 0)
